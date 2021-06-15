@@ -56,8 +56,7 @@ jobs:
         lcov-file: ${{ env.TEST_COVERAGE_FOLDER_PATH }}/test_coverage/lcov.info 
 
     # produce docker images
-    - if: ${{ github.event_name != 'pull_request' }}
-      name: build frontend image
+    - name: build frontend image
       env:
         DOCKERFILE: Frontend.Dockerfile
         IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-frontend
@@ -68,8 +67,7 @@ jobs:
             -f ${{ env.DOCKERFILE }} \
             --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }}
     
-    - if: ${{ github.event_name != 'pull_request' }}
-      name: build frontend image
+    - name: build frontend image
       env:
         DOCKERFILE: Api.Dockerfile
         IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-api
@@ -81,7 +79,7 @@ jobs:
             --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }}
 
     - if: ${{ github.event_name != 'pull_request' }}
-      name: dev registry login
+      name: registry login
       env:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
