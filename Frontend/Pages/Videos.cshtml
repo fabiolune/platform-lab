@@ -1,0 +1,61 @@
+﻿@page
+@model Frontend.Pages.VideosModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+
+@if (Model.Error)
+{
+    <div class="alert alert-danger" role="alert">
+        Something went wrong, please try again
+    </div>
+}
+
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addVideoModal">
+    Add video
+</button>
+@if (Model.Videos.Any())
+{
+    <div class="text-center">
+        <h2 class="display-1">Video list</h2>
+    </div>
+    <br />
+    @foreach (var video in Model.Videos)
+    {
+        <p class="h5">@video.Title</p>
+        <a href="@video.Url" target="_blank">@video.Url</a>
+        <hr />
+    }
+}
+else
+{
+    <h2 class="display-4">No videos available</h2>
+}
+
+<div class="modal fade" id="addVideoModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Add new video</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    <div class="form-group">
+                        <label for="videoTitle">Title</label>
+                        <input type="text" class="form-control" id="videoTitle" placeholder="Enter video title" asp-for="NewVideo.Title" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="videoUrl">Video Url</label>
+                        <input type="url" class="form-control" id="videoUrl" placeholder="https://url/of/video" asp-for="NewVideo.Url" value="">
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

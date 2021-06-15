@@ -1,0 +1,49 @@
+﻿@page
+
+<h1 class="display-3">Introduction</h1>
+
+<p>
+    This proof of concept is an attempt to collect together different pieces of a possible generic microservices architecture on kubernetes.
+    The main idea is to have a decent starting point to provide a seamless and safe delivery process
+</p>
+
+<p>
+    The components of this architecture are (checked items are already in place):
+    <ul>
+        <li><input type="checkbox" onclick="return false;" checked="checked" /> kubernetes cluster (AKS): this is going to be the overall environment</li>
+        <li><input type="checkbox" onclick="return false;" checked="checked" /> Hashicorp Vault to safely store secrets (api keys and connection strings in this case)</li>
+        <li><input type="checkbox" onclick="return false;" checked="checked" /> Istio for east-west microservices network communication</li>
+        <li><input type="checkbox" onclick="return false;" checked="checked" /> Two microservices (Frontend and Api) with a Redis persistence layer</li>
+        <li><input type="checkbox" onclick="return false;" /> Prometheus as Istio addon to collect metrics</li>
+        <li><input type="checkbox" onclick="return false;" /> Grafana as Istio addon to present metrics</li>
+        <li><input type="checkbox" onclick="return false;" /> Flagger to automate canary deliveries and A/B testing</li>
+    </ul>
+</p>
+
+<h3 class="display-4">Architecture overview</h3>
+
+<figure id="fig-l">
+    <pre>
+                  ┌ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┐
+                                                             ┌─────────┐                       
+                  │                           ┌──────────────┤  vault  ├──────────────┐       │
+                                              │              └────┬────┘              │        
+                  │                           │                   │                   │       │
+                                              │                   │                   │        
+  ┌──────────┐    │┌───────────┐       ┌──────┴─────┐       ┌─────┴─────┐       ┌─────┴─────┐ │
+  │ cloud LB ├─────┤  gateway  ├───────┤  frontend  │       │    api    │       │   redis   │  
+  └──────────┘    │└───────────┘       └──────┬─────┘       └─────┬─────┘       └─────┬─────┘ │
+                                              │                   │                   │        
+                  │                      ┌────┴────┐         ┌────┴────┐         ┌────┴────┐  │
+                                         │  istio  ├─────────┤  istio  ├─────────┤  istio  │   
+                  │                      └─────────┘         └─────────┘         └─────────┘  │
+                    - kubernetes -                                                             
+                  └ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ┘
+    </pre>
+    <figcaption>
+        <small>
+            Simplified architecture view ("istio" identifies the sidecars and "vault" is a generic placeholder for vault server and secrets injectors)
+        </small>
+    </figcaption>
+</figure>
+
