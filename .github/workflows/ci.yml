@@ -65,7 +65,7 @@ jobs:
             docker build . \
             -t ${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
             -f ${{ env.DOCKERFILE }} \
-            --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }}
+            --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }}
     
     - name: build frontend image
       env:
@@ -76,17 +76,14 @@ jobs:
             docker build . \
             -t ${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
             -f ${{ env.DOCKERFILE }} \
-            --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }}
+            --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }}
 
     - if: ${{ github.event_name != 'pull_request' }}
-      name: registry login
+      name: registry login and push image
       env:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
-      run: echo "${DOCKER_PASSWORD}" | docker login ottregistrydev.azurecr.io --username ${DOCKER_USERNAME} --password-stdin
-
-    - if: ${{ github.event_name != 'pull_request' }}
-      name: push image to dev registry
       run: |
-        docker push ${{ env.REPOSITORY_NAME }}-frontend:${{ env.GITVERSION_NUGETVERSIONV2 }}
-        docker push ${{ env.REPOSITORY_NAME }}-api:${{ env.GITVERSION_NUGETVERSIONV2 }}
+        echo "${DOCKER_PASSWORD}" | docker login ottregistrydev.azurecr.io --username ${DOCKER_USERNAME} --password-stdin
+        docker push ${{ env.DOCKER_USERNAME }}/${{ env.REPOSITORY_NAME }}-frontend:${{ env.GITVERSION_NUGETVERSIONV2 }}
+        docker push ${{ env.DOCKER_USERNAME }}/${{ env.REPOSITORY_NAME }}-api:${{ env.GITVERSION_NUGETVERSIONV2 }}
