@@ -56,7 +56,8 @@ jobs:
         lcov-file: ${{ env.TEST_COVERAGE_FOLDER_PATH }}/test_coverage/lcov.info 
 
     # produce docker images
-    - name: build frontend image
+    - if: ${{ github.event_name != 'pull_request' }}
+      name: build frontend image
       env:
         DOCKERFILE: Frontend.Dockerfile
         IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-frontend
@@ -67,7 +68,8 @@ jobs:
             -f ${{ env.DOCKERFILE }} \
             --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }}
     
-    - name: build frontend image
+    - if: ${{ github.event_name != 'pull_request' }}
+      name: build api image
       env:
         DOCKERFILE: Api.Dockerfile
         IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-api
