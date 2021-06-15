@@ -1,0 +1,96 @@
+name: CI pipeline with multistaged docker build and image push
+
+on:
+  push:
+    branches: [ develop ]
+    tags: 
+    - 'v*'
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: checkout
+      uses: actions/checkout@v1
+    
+    - name: set GITHUB_REPOSITORY env variable
+      run: echo REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}') >> $GITHUB_ENV
+      shell: bash
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v0.9.7
+      with:
+        versionSpec: '5.5.0'
+
+    - name: Compute version numbers
+      id:   gitversion
+      uses: gittools/actions/gitversion/execute@v0.9.7
+
+    - name: build, test and compute code coverage in docker
+      run: |
+        DOCKER_BUILDKIT=1 \
+          docker build example-apps/src \
+          -t ${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }} \
+          --build-arg buildConfiguration=Release \
+          --build-arg version=${{ steps.gitversion.outputs.nuGetVersionV2 }}
+    
+    # tests and code coverage
+    - name: export test data
+      id: export-tests
+      run: |
+        testfolder=$(pwd)/${GITHUB_RUN_ID}_${GITHUB_RUN_NUMBER} 
+        mkdir $testfolder 
+        docker run --rm -v $testfolder:/app/_output  ${{ env.REPOSITORY_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} 
+        echo "TEST_COVERAGE_FOLDER_PATH=$testfolder" >> $GITHUB_ENV
+
+    - name: remap path in code coverage report
+      run: sed -i 's|/app/|/|i' ${{ env.TEST_COVERAGE_FOLDER_PATH }}/test_coverage/lcov.info
+
+    - name: publish code coverage results
+      uses: romeovs/lcov-reporter-action@v0.2.21
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        lcov-file: ${{ env.TEST_COVERAGE_FOLDER_PATH }}/test_coverage/lcov.info 
+
+    # produce docker images
+    - if: ${{ github.event_name != 'pull_request' }}
+      name: build frontend image
+      env:
+        DOCKERFILE: Frontend.Dockerfile
+        IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-frontend
+      run: |
+        DOCKER_BUILDKIT=1 \
+            docker build \
+            example-apps/src \
+            -t ${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
+            -f ${{ env.DOCKERFILE }} \
+            --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }}
+    
+    - if: ${{ github.event_name != 'pull_request' }}
+      name: build frontend image
+      env:
+        DOCKERFILE: Api.Dockerfile
+        IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-api
+      run: |
+        DOCKER_BUILDKIT=1 \
+            docker build \
+            example-apps/src \
+            -t ${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
+            -f ${{ env.DOCKERFILE }} \
+            --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }}
+
+    - if: ${{ github.event_name != 'pull_request' }}
+      name: dev registry login
+      env:
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+      run: echo "${DOCKER_PASSWORD}" | docker login ottregistrydev.azurecr.io --username ${DOCKER_USERNAME} --password-stdin
+
+    - if: ${{ github.event_name != 'pull_request' }}
+      name: push image to dev registry
+      run: |
+        docker push ${{ env.REPOSITORY_NAME }}-frontend:${{ env.GITVERSION_NUGETVERSIONV2 }}
+        docker push ${{ env.REPOSITORY_NAME }}-api:${{ env.GITVERSION_NUGETVERSIONV2 }}
