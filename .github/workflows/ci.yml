@@ -32,7 +32,7 @@ jobs:
     - name: build, test and compute code coverage in docker
       run: |
         DOCKER_BUILDKIT=1 \
-          docker build example-apps/src \
+          docker build . \
           -t ${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }} \
           --build-arg buildConfiguration=Release \
           --build-arg version=${{ steps.gitversion.outputs.nuGetVersionV2 }}
@@ -63,8 +63,7 @@ jobs:
         IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-frontend
       run: |
         DOCKER_BUILDKIT=1 \
-            docker build \
-            example-apps/src \
+            docker build . \
             -t ${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
             -f ${{ env.DOCKERFILE }} \
             --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }}
@@ -76,8 +75,7 @@ jobs:
         IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-api
       run: |
         DOCKER_BUILDKIT=1 \
-            docker build \
-            example-apps/src \
+            docker build . \
             -t ${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
             -f ${{ env.DOCKERFILE }} \
             --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ steps.gitversion.outputs.nuGetVersionV2 }}
