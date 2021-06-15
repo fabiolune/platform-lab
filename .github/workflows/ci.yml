@@ -61,10 +61,11 @@ jobs:
       env:
         DOCKERFILE: Frontend.Dockerfile
         IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-frontend
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
         DOCKER_BUILDKIT=1 \
             docker build . \
-            -t ${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
+            -t ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
             -f ${{ env.DOCKERFILE }} \
             --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }}
     
@@ -73,10 +74,11 @@ jobs:
       env:
         DOCKERFILE: Api.Dockerfile
         IMAGE_NAME: ${{ env.REPOSITORY_NAME }}-api
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
         DOCKER_BUILDKIT=1 \
             docker build . \
-            -t ${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
+            -t ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }} \
             -f ${{ env.DOCKERFILE }} \
             --build-arg BUILDIMAGE=${{ env.REPOSITORY_NAME }}:${{ env.GITVERSION_NUGETVERSIONV2 }}
 
