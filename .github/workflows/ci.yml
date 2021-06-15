@@ -86,6 +86,6 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       run: |
-        echo "${DOCKER_PASSWORD}" | docker login ottregistrydev.azurecr.io --username ${DOCKER_USERNAME} --password-stdin
+        echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
         docker push ${{ env.DOCKER_USERNAME }}/${{ env.REPOSITORY_NAME }}-frontend:${{ env.GITVERSION_NUGETVERSIONV2 }}
         docker push ${{ env.DOCKER_USERNAME }}/${{ env.REPOSITORY_NAME }}-api:${{ env.GITVERSION_NUGETVERSIONV2 }}
